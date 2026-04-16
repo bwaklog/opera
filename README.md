@@ -10,3 +10,5 @@
 ./mvnw test
 - python test_opaero_api.py
 ```
+
+## About the project
