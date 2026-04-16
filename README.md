@@ -11,60 +11,21 @@
 - python test_opaero_api.py
 ```
 
-## Project Summary: 
+## About
 
-Opaero is a comprehensive Airport and Flight Operations Management System built with Spring Boot and Java. It is an Object-Oriented Analysis & Design (OOAD) project that implements modern design patterns and software engineering principles.
+Opaero is a Spring Boot-based airport and flight operations management system that simulates real-world airport workflows. It handles flight scheduling, passenger check-in, gate allocation, runway assignment, and air traffic control operations—basically everything that happens behind the scenes at an airport.
 
----
-
-## Core Purpose
-
-The system manages airport operations including flights, passengers, gates, and runways through a RESTful API backend. It supports workflows such as flight scheduling, gate allocation, runway management, and passenger check-in.
+The project is built with clean architecture and solid object-oriented design principles. It uses multiple design patterns like Strategy (for smarter gate/runway allocation), State (to manage flight lifecycles), Observer (to notify about flight updates), Factory (for creating users), and Facade (to simplify passenger operations).
 
 ---
 
-## Technology Stack
+## What it does
 
-- **Backend:** Spring Boot 4.0.5  
-- **Language:** Java 17  
-- **Database:** H2 (in-memory database)  
-- **Architecture Pattern:** Model-View-Controller (MVC)  
-- **Build Tools:** Maven & Gradle  
-- **API Testing:** Python (`test_opaero_api.py`)  
-
----
-
-## Key Components
-
-| Component     | Purpose |
-|--------------|--------|
-| Models       | Flight, Gate, Runway, User entities persisted via JPA |
-| Controllers  | Handle HTTP requests: PassengerController, AirlineStaffController, GroundOpsController, AirTrafficController, AdminController |
-| Services     | Business logic: FlightService, GroundOperationsService, AirTrafficControlService |
-| Repositories | Data persistence layer for all entities |
+- REST APIs for passengers, airline staff, ground operations, ATC, and admins  
+- Flight lifecycle management (Scheduled → Boarding → Taxiing → Takeoff)  
+- Dynamic gate and runway allocation strategies  
+- H2 in-memory database for quick testing  
+- OpenAPI documentation  
+- Python-based integration tests  
 
 ---
-
-## Design Patterns Implemented
-
-- **Singleton:** `AirportSystemManager` – Global airport configuration  
-- **Factory Method:** `UserFactory` – User instantiation by role  
-- **Facade:** `PassengerOperationsFacade` – Simplified passenger workflows  
-- **Strategy:** `GateAllocationStrategy`, `RunwayAllocationStrategy` – Pluggable allocation algorithms  
-- **Observer:** `FlightNotifier`, `FlightObserver` – Flight update broadcasting  
-- **State:** `FlightState`, `ScheduledState`, `BoardingState` – Flight lifecycle management  
-
----
-
-## Core Principles
-
-- Single Responsibility Principle (SRP)  
-- Open-Closed Principle (OCP)  
-- Dependency Inversion Principle (DIP)  
-- Liskov Substitution Principle (LSP)  
-
----
-
-## Summary
-
-This project is an academic OOAD implementation that demonstrates enterprise-level architecture, clean design principles, and real-world system modeling in the context of airport and flight operations.
