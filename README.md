@@ -2,6 +2,7 @@
 
 ## Build
 ```bash
+brew update
 ./mvnw clean package
 ```
 
