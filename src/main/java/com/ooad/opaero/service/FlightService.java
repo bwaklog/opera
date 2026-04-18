@@ -3,7 +3,9 @@ import com.ooad.opaero.model.Flight;
 import com.ooad.opaero.repository.FlightRepository;
 import com.ooad.opaero.patterns.state.FlightStateContext;
 import com.ooad.opaero.patterns.observer.FlightNotifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @Service
@@ -27,11 +29,11 @@ public class FlightService {
     }
 
     public Flight getFlight(Long flightId) {
-        return flightRepo.findById(flightId).orElseThrow();
+        return flightRepo.findById(flightId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flight not found: " + flightId));
     }
 
     public Flight updateStatus(Long flightId, String status) {
-        Flight f = flightRepo.findById(flightId).orElseThrow();
+        Flight f = flightRepo.findById(flightId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flight not found: " + flightId));
         f.setStatus(status);
         Flight updated = flightRepo.save(f);
         notifier.notifyFlightUpdate(updated);
@@ -39,7 +41,7 @@ public class FlightService {
     }
     
     public Flight advanceFlightState(Long flightId) {
-        Flight f = flightRepo.findById(flightId).orElseThrow();
+        Flight f = flightRepo.findById(flightId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flight not found: " + flightId));
         FlightStateContext ctx = new FlightStateContext();
         ctx.nextState(f);
         Flight updated = flightRepo.save(f);

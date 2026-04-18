@@ -360,6 +360,35 @@
   </section>
 
   <div class="grid2">
+    <section>
+      <h2>CREATE PASSENGER</h2>
+      <div class="form-row" style="flex-direction:column;align-items:flex-start">
+        <div class="form-row">
+          <div class="form-group">
+            <label>USERNAME</label>
+            <input type="text" id="pax-username" placeholder="e.g. john_doe">
+          </div>
+        </div>
+        <button class="btn" onclick="createPassenger()">CREATE PASSENGER</button>
+      </div>
+      <div id="msg-create-pax" class="msg hidden"></div>
+    </section>
+
+    <section>
+      <h2>ALL PASSENGERS</h2>
+      <button class="btn secondary small" onclick="loadPassengers()" style="margin-bottom:8px">REFRESH</button>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>USERNAME</th><th>ROLE</th></tr>
+        </thead>
+        <tbody id="admin-passengers-body">
+          <tr><td colspan="3">Click REFRESH to load.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="grid2">
 
     <section>
       <h2>CREATE GATE</h2>
@@ -722,6 +751,37 @@ async function loadAdminRunways() {
     ).join('');
   } catch (e) {
     document.getElementById('admin-runways-body').innerHTML =
+      '<tr><td colspan="3">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+// ─── PASSENGERS ──────────────────────────────────────────────────────────────
+
+async function createPassenger() {
+  const username = document.getElementById('pax-username').value.trim();
+  if (!username) { showMsg('msg-create-pax', 'Username required.', true); return; }
+  try {
+    const u = await api('POST', '/api/admin/passengers', { username });
+    showMsg('msg-create-pax', `Passenger "${u.username}" created. ID: ${u.id}`, false);
+    document.getElementById('pax-username').value = '';
+    loadPassengers();
+  } catch (e) {
+    showMsg('msg-create-pax', 'Error: ' + e.message, true);
+  }
+}
+
+async function loadPassengers() {
+  try {
+    const users = await apiQuery('/api/admin/passengers');
+    const tbody = document.getElementById('admin-passengers-body');
+    if (!users || users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3">No passengers.</td></tr>'; return;
+    }
+    tbody.innerHTML = users.map(u =>
+      `<tr><td>${u.id}</td><td>${u.username}</td><td>${u.role}</td></tr>`
+    ).join('');
+  } catch (e) {
+    document.getElementById('admin-passengers-body').innerHTML =
       '<tr><td colspan="3">Error: ' + e.message + '</td></tr>';
   }
 }

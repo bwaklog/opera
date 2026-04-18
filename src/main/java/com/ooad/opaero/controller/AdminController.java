@@ -2,9 +2,11 @@ package com.ooad.opaero.controller;
 import com.ooad.opaero.model.Flight;
 import com.ooad.opaero.model.Gate;
 import com.ooad.opaero.model.Runway;
+import com.ooad.opaero.model.User;
 import com.ooad.opaero.repository.FlightRepository;
 import com.ooad.opaero.repository.GateRepository;
 import com.ooad.opaero.repository.RunwayRepository;
+import com.ooad.opaero.repository.UserRepository;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,11 +17,24 @@ public class AdminController {
     private final GateRepository gateRepo;
     private final RunwayRepository runwayRepo;
     private final FlightRepository flightRepo;
+    private final UserRepository userRepo;
 
-    public AdminController(GateRepository gateRepo, RunwayRepository runwayRepo, FlightRepository flightRepo) {
+    public AdminController(GateRepository gateRepo, RunwayRepository runwayRepo, FlightRepository flightRepo, UserRepository userRepo) {
         this.gateRepo = gateRepo;
         this.runwayRepo = runwayRepo;
         this.flightRepo = flightRepo;
+        this.userRepo = userRepo;
+    }
+
+    @PostMapping("/passengers")
+    public User createPassenger(@RequestBody User user) {
+        user.setRole("PASSENGER");
+        return userRepo.save(user);
+    }
+
+    @GetMapping("/passengers")
+    public List<User> listPassengers() {
+        return userRepo.findAll();
     }
 
     @PostMapping("/gates")
