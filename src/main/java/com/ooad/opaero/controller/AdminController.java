@@ -6,6 +6,7 @@ import com.ooad.opaero.repository.FlightRepository;
 import com.ooad.opaero.repository.GateRepository;
 import com.ooad.opaero.repository.RunwayRepository;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -71,6 +72,28 @@ public class AdminController {
             r2.setLength(4200.0);
             r2.setOccupied(false);
             runwayRepo.save(r2);
+        }
+        if (flightRepo.count() == 0) {
+            String[][] flights = {
+                {"AI101",  "Delhi",     "2026-04-19T06:00"},
+                {"AI202",  "Mumbai",    "2026-04-19T07:30"},
+                {"6E301",  "Bangalore", "2026-04-19T09:15"},
+                {"UK412",  "Chennai",   "2026-04-19T10:00"},
+                {"SG501",  "Kolkata",   "2026-04-19T11:45"},
+                {"AI603",  "Delhi",     "2026-04-19T14:00"},
+                {"9W710",  "Hyderabad", "2026-04-19T15:30"},
+                {"6E820",  "Mumbai",    "2026-04-19T17:00"},
+                {"AI930",  "Pune",      "2026-04-19T18:30"},
+                {"UK105",  "Goa",       "2026-04-19T20:00"},
+            };
+            for (String[] data : flights) {
+                Flight f = new Flight();
+                f.setFlightNumber(data[0]);
+                f.setDestination(data[1]);
+                f.setDepartureTime(LocalDateTime.parse(data[2]));
+                f.setStatus("SCHEDULED");
+                flightRepo.save(f);
+            }
         }
     }
 }

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPAERO — Airport Operations</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 13px;
+      background: #fff;
+      color: #000;
+      padding: 16px;
+    }
+
+    header {
+      border-bottom: 2px solid #000;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    header h1 { font-size: 18px; font-weight: bold; letter-spacing: 2px; }
+    header p { font-size: 11px; margin-top: 2px; }
+
+    /* TABS */
+    nav { display: flex; gap: 0; margin-bottom: 0; border-bottom: 2px solid #000; }
+    nav button {
+      font-family: inherit;
+      font-size: 12px;
+      background: #fff;
+      color: #000;
+      border: 1px solid #000;
+      border-bottom: none;
+      padding: 5px 14px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      margin-right: -1px;
+    }
+    nav button.active { background: #000; color: #fff; }
+    nav button:hover:not(.active) { background: #eee; }
+
+    /* PANELS */
+    .panel { display: none; padding: 16px 0; }
+    .panel.active { display: block; }
+
+    /* SECTIONS */
+    section { margin-bottom: 24px; }
+    section h2 {
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+
+    /* FORMS */
+    .form-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 4px; }
+    .form-group { display: flex; flex-direction: column; gap: 2px; }
+    .form-group label { font-size: 11px; }
+    .form-group input, .form-group select {
+      font-family: inherit;
+      font-size: 13px;
+      border: 1px solid #000;
+      padding: 3px 6px;
+      background: #fff;
+      color: #000;
+      width: 180px;
+    }
+
+    /* BUTTONS */
+    button.btn {
+      font-family: inherit;
+      font-size: 12px;
+      background: #000;
+      color: #fff;
+      border: 1px solid #000;
+      padding: 4px 12px;
+      cursor: pointer;
+      letter-spacing: 1px;
+    }
+    button.btn:hover { background: #333; }
+    button.btn.secondary {
+      background: #fff;
+      color: #000;
+    }
+    button.btn.secondary:hover { background: #eee; }
+    button.btn.small { font-size: 11px; padding: 2px 8px; }
+
+    /* TABLES */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    th {
+      text-align: left;
+      border-bottom: 2px solid #000;
+      padding: 4px 8px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      background: #000;
+      color: #fff;
+    }
+    td {
+      border-bottom: 1px solid #ccc;
+      padding: 4px 8px;
+      vertical-align: middle;
+    }
+    tr:hover td { background: #f5f5f5; }
+
+    /* STATUS BADGES */
+    .status {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      border: 1px solid #000;
+      padding: 1px 5px;
+      display: inline-block;
+    }
+
+    /* MESSAGES */
+    .msg {
+      font-size: 12px;
+      border: 1px solid #000;
+      padding: 6px 10px;
+      margin-top: 8px;
+      max-width: 600px;
+    }
+    .msg.ok { border-left: 4px solid #000; background: #f9f9f9; }
+    .msg.err { border-left: 4px solid #000; background: #fff; font-style: italic; }
+    .msg.hidden { display: none; }
+
+    /* GRID for two columns */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+    @media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>OPAERO</h1>
+  <p>Airport Operations Management System</p>
+</header>
+
+<nav id="tabs">
+  <button class="active" onclick="showTab('flights')">FLIGHTS</button>
+  <button onclick="showTab('airline')">AIRLINE</button>
+  <button onclick="showTab('groundops')">GROUND OPS</button>
+  <button onclick="showTab('atc')">ATC</button>
+  <button onclick="showTab('admin')">ADMIN</button>
+</nav>
+
+<!-- ===================== FLIGHTS PANEL ===================== -->
+<div id="panel-flights" class="panel active">
+
+  <section>
+    <h2>SEARCH FLIGHTS</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>DESTINATION</label>
+        <input type="text" id="search-dest" placeholder="e.g. New York">
+      </div>
+      <button class="btn" onclick="searchFlights()">SEARCH</button>
+      <button class="btn secondary" onclick="loadAllFlights()">SHOW ALL</button>
+    </div>
+    <div id="msg-search" class="msg hidden"></div>
+  </section>
+
+  <section>
+    <h2>FLIGHT BOARD</h2>
+    <div id="flight-board-container">
+      <table id="flight-board">
+        <thead>
+          <tr>
+            <th>ID</th><th>FLIGHT #</th><th>DESTINATION</th>
+            <th>DEPARTURE</th><th>GATE</th><th>RUNWAY</th><th>STATUS</th>
+          </tr>
+        </thead>
+        <tbody id="flight-board-body">
+          <tr><td colspan="7">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>PASSENGER CHECK-IN</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>PASSENGER ID</label>
+        <input type="number" id="checkin-passenger" placeholder="Passenger ID">
+      </div>
+      <div class="form-group">
+        <label>FLIGHT ID</label>
+        <input type="number" id="checkin-flight" placeholder="Flight ID">
+      </div>
+      <button class="btn" onclick="doCheckin()">CHECK IN</button>
+    </div>
+    <div id="msg-checkin" class="msg hidden"></div>
+  </section>
+</div>
+
+<!-- ===================== AIRLINE PANEL ===================== -->
+<div id="panel-airline" class="panel">
+
+  <section>
+    <h2>SCHEDULE NEW FLIGHT</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>FLIGHT NUMBER</label>
+        <input type="text" id="sched-number" placeholder="e.g. AA101">
+      </div>
+      <div class="form-group">
+        <label>DESTINATION</label>
+        <input type="text" id="sched-dest" placeholder="e.g. Chicago">
+      </div>
+      <div class="form-group">
+        <label>DEPARTURE TIME</label>
+        <input type="datetime-local" id="sched-time">
+      </div>
+      <button class="btn" onclick="scheduleFlight()">SCHEDULE</button>
+    </div>
+    <div id="msg-schedule" class="msg hidden"></div>
+  </section>
+
+  <section>
+    <h2>ALL FLIGHTS</h2>
+    <button class="btn secondary small" onclick="loadAirlineFlights()" style="margin-bottom:8px">REFRESH</button>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>FLIGHT #</th><th>DESTINATION</th>
+          <th>DEPARTURE</th><th>GATE</th><th>RUNWAY</th><th>STATUS</th><th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="airline-flights-body">
+        <tr><td colspan="8">Click REFRESH to load.</td></tr>
+      </tbody>
+    </table>
+    <div id="msg-advance" class="msg hidden"></div>
+  </section>
+
+  <section>
+    <h2>UPDATE FLIGHT STATUS</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>FLIGHT ID</label>
+        <input type="number" id="upd-id" placeholder="Flight ID">
+      </div>
+      <div class="form-group">
+        <label>NEW STATUS</label>
+        <select id="upd-status">
+          <option value="SCHEDULED">SCHEDULED</option>
+          <option value="BOARDING">BOARDING</option>
+          <option value="TAXIING">TAXIING</option>
+          <option value="CLEARED_FOR_TAKEOFF">CLEARED_FOR_TAKEOFF</option>
+        </select>
+      </div>
+      <button class="btn" onclick="updateStatus()">UPDATE</button>
+    </div>
+    <div id="msg-update-status" class="msg hidden"></div>
+  </section>
+</div>
+
+<!-- ===================== GROUND OPS PANEL ===================== -->
+<div id="panel-groundops" class="panel">
+  <div class="grid2">
+
+    <section>
+      <h2>AVAILABLE GATES</h2>
+      <button class="btn secondary small" onclick="loadAvailableGates()" style="margin-bottom:8px">REFRESH</button>
+      <table>
+        <thead>
+          <tr><th>GATE ID</th><th>TERMINAL</th><th>OCCUPIED</th></tr>
+        </thead>
+        <tbody id="available-gates-body">
+          <tr><td colspan="3">Click REFRESH to load.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>ASSIGN GATE</h2>
+      <p style="font-size:11px;margin-bottom:10px;">Automatically assigns an available gate to the flight.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>FLIGHT ID</label>
+          <input type="number" id="assign-gate-flight" placeholder="Flight ID">
+        </div>
+        <button class="btn" onclick="assignGate()">ASSIGN GATE</button>
+      </div>
+      <div id="msg-assign-gate" class="msg hidden"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ===================== ATC PANEL ===================== -->
+<div id="panel-atc" class="panel">
+  <div class="grid2">
+
+    <section>
+      <h2>AVAILABLE RUNWAYS</h2>
+      <button class="btn secondary small" onclick="loadAvailableRunways()" style="margin-bottom:8px">REFRESH</button>
+      <table>
+        <thead>
+          <tr><th>RUNWAY ID</th><th>LENGTH (m)</th><th>OCCUPIED</th></tr>
+        </thead>
+        <tbody id="available-runways-body">
+          <tr><td colspan="3">Click REFRESH to load.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>ATC OPERATIONS</h2>
+      <div style="margin-bottom:16px">
+        <h2>ASSIGN RUNWAY</h2>
+        <p style="font-size:11px;margin-bottom:10px;">Automatically assigns an available runway to the flight.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>FLIGHT ID</label>
+            <input type="number" id="assign-runway-flight" placeholder="Flight ID">
+          </div>
+          <button class="btn" onclick="assignRunway()">ASSIGN RUNWAY</button>
+        </div>
+        <div id="msg-assign-runway" class="msg hidden"></div>
+      </div>
+
+      <div>
+        <h2>ISSUE TAKEOFF CLEARANCE</h2>
+        <p style="font-size:11px;margin-bottom:10px;">Advances flight to CLEARED_FOR_TAKEOFF state.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>FLIGHT ID</label>
+            <input type="number" id="clearance-flight" placeholder="Flight ID">
+          </div>
+          <button class="btn" onclick="issueClearance()">ISSUE CLEARANCE</button>
+        </div>
+        <div id="msg-clearance" class="msg hidden"></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ===================== ADMIN PANEL ===================== -->
+<div id="panel-admin" class="panel">
+
+  <section>
+    <h2>SEED DEFAULT DATA</h2>
+    <p style="font-size:11px;margin-bottom:10px;">Creates default gates (A1, A2) and runways (R1, R2) if none exist.</p>
+    <button class="btn" onclick="seedData()">SEED DATA</button>
+    <div id="msg-seed" class="msg hidden"></div>
+  </section>
+
+  <div class="grid2">
+
+    <section>
+      <h2>CREATE GATE</h2>
+      <div class="form-row" style="flex-direction:column;align-items:flex-start">
+        <div class="form-row">
+          <div class="form-group">
+            <label>GATE ID</label>
+            <input type="text" id="gate-id" placeholder="e.g. B3">
+          </div>
+          <div class="form-group">
+            <label>TERMINAL</label>
+            <input type="text" id="gate-terminal" placeholder="e.g. T2">
+          </div>
+        </div>
+        <button class="btn" onclick="createGate()">CREATE GATE</button>
+      </div>
+      <div id="msg-create-gate" class="msg hidden"></div>
+    </section>
+
+    <section>
+      <h2>CREATE RUNWAY</h2>
+      <div class="form-row" style="flex-direction:column;align-items:flex-start">
+        <div class="form-row">
+          <div class="form-group">
+            <label>RUNWAY ID</label>
+            <input type="text" id="runway-id" placeholder="e.g. R3">
+          </div>
+          <div class="form-group">
+            <label>LENGTH (meters)</label>
+            <input type="number" id="runway-length" placeholder="e.g. 3500">
+          </div>
+        </div>
+        <button class="btn" onclick="createRunway()">CREATE RUNWAY</button>
+      </div>
+      <div id="msg-create-runway" class="msg hidden"></div>
+    </section>
+
+  </div>
+
+  <div class="grid2" style="margin-top:0">
+
+    <section>
+      <h2>ALL GATES</h2>
+      <button class="btn secondary small" onclick="loadAdminGates()" style="margin-bottom:8px">REFRESH</button>
+      <table>
+        <thead>
+          <tr><th>GATE ID</th><th>TERMINAL</th><th>OCCUPIED</th></tr>
+        </thead>
+        <tbody id="admin-gates-body">
+          <tr><td colspan="3">Click REFRESH to load.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>ALL RUNWAYS</h2>
+      <button class="btn secondary small" onclick="loadAdminRunways()" style="margin-bottom:8px">REFRESH</button>
+      <table>
+        <thead>
+          <tr><th>RUNWAY ID</th><th>LENGTH (m)</th><th>OCCUPIED</th></tr>
+        </thead>
+        <tbody id="admin-runways-body">
+          <tr><td colspan="3">Click REFRESH to load.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+</div>
+
+<script>
+// ─── UTILITIES ──────────────────────────────────────────────────────────────
+
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function showMsg(id, text, isErr) {
+  const el = document.getElementById(id);
+  el.className = 'msg ' + (isErr ? 'err' : 'ok');
+  el.textContent = text;
+  setTimeout(() => el.className = 'msg hidden', 5000);
+}
+
+function fmtDate(str) {
+  if (!str) return '—';
+  try { return new Date(str).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }); }
+  catch { return str; }
+}
+
+function fmtBool(b) { return b ? 'YES' : 'NO'; }
+
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || res.statusText);
+  try { return JSON.parse(text); } catch { return text; }
+}
+
+async function apiQuery(path) {
+  const res = await fetch(path);
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || res.statusText);
+  try { return JSON.parse(text); } catch { return text; }
+}
+
+// ─── FLIGHT BOARD ────────────────────────────────────────────────────────────
+
+function renderFlightRows(flights, tbodyId, withActions) {
+  const tbody = document.getElementById(tbodyId);
+  if (!flights || flights.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="' + (withActions ? 8 : 7) + '">No flights found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = flights.map(f => `
+    <tr>
+      <td>${f.id}</td>
+      <td>${f.flightNumber || '—'}</td>
+      <td>${f.destination || '—'}</td>
+      <td>${fmtDate(f.departureTime)}</td>
+      <td>${f.gateNumber || '—'}</td>
+      <td>${f.runwayId || '—'}</td>
+      <td><span class="status">${f.status || '—'}</span></td>
+      ${withActions ? `<td><button class="btn small" onclick="advance(${f.id})">ADVANCE</button></td>` : ''}
+    </tr>`).join('');
+}
+
+async function loadAllFlights() {
+  try {
+    const flights = await apiQuery('/api/airline/flights');
+    renderFlightRows(flights, 'flight-board-body', false);
+    document.getElementById('msg-search').className = 'msg hidden';
+  } catch (e) {
+    showMsg('msg-search', 'Error: ' + e.message, true);
+  }
+}
+
+async function searchFlights() {
+  const dest = document.getElementById('search-dest').value.trim();
+  if (!dest) { showMsg('msg-search', 'Enter a destination.', true); return; }
+  try {
+    const flights = await apiQuery('/api/passenger/flights/search?dest=' + encodeURIComponent(dest));
+    renderFlightRows(flights, 'flight-board-body', false);
+    showMsg('msg-search', flights.length + ' flight(s) found for "' + dest + '".', false);
+  } catch (e) {
+    showMsg('msg-search', 'Error: ' + e.message, true);
+  }
+}
+
+async function doCheckin() {
+  const pid = document.getElementById('checkin-passenger').value;
+  const fid = document.getElementById('checkin-flight').value;
+  if (!pid || !fid) { showMsg('msg-checkin', 'Enter both Passenger ID and Flight ID.', true); return; }
+  try {
+    const result = await api('POST', `/api/passenger/checkin?passengerId=${pid}&flightId=${fid}`);
+    showMsg('msg-checkin', result ? 'Check-in successful.' : 'Check-in failed (passenger or flight not found).', !result);
+  } catch (e) {
+    showMsg('msg-checkin', 'Error: ' + e.message, true);
+  }
+}
+
+// ─── AIRLINE ────────────────────────────────────────────────────────────────
+
+async function scheduleFlight() {
+  const number = document.getElementById('sched-number').value.trim();
+  const dest = document.getElementById('sched-dest').value.trim();
+  const time = document.getElementById('sched-time').value;
+  if (!number || !dest || !time) { showMsg('msg-schedule', 'All fields required.', true); return; }
+  try {
+    const f = await api('POST', '/api/airline/schedule', {
+      flightNumber: number,
+      destination: dest,
+      departureTime: time + ':00'
+    });
+    showMsg('msg-schedule', `Flight ${f.flightNumber} scheduled (ID: ${f.id}).`, false);
+    loadAirlineFlights();
+  } catch (e) {
+    showMsg('msg-schedule', 'Error: ' + e.message, true);
+  }
+}
+
+async function loadAirlineFlights() {
+  try {
+    const flights = await apiQuery('/api/airline/flights');
+    renderFlightRows(flights, 'airline-flights-body', true);
+  } catch (e) {
+    document.getElementById('airline-flights-body').innerHTML =
+      '<tr><td colspan="8">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+async function advance(id) {
+  try {
+    const f = await api('POST', `/api/airline/${id}/advance`);
+    showMsg('msg-advance', `Flight ${f.flightNumber} advanced to ${f.status}.`, false);
+    loadAirlineFlights();
+  } catch (e) {
+    showMsg('msg-advance', 'Error: ' + e.message, true);
+  }
+}
+
+async function updateStatus() {
+  const id = document.getElementById('upd-id').value;
+  const status = document.getElementById('upd-status').value;
+  if (!id) { showMsg('msg-update-status', 'Enter Flight ID.', true); return; }
+  try {
+    const f = await api('PATCH', `/api/airline/flights/${id}/status?status=${status}`);
+    showMsg('msg-update-status', `Flight ${f.flightNumber} status set to ${f.status}.`, false);
+    loadAirlineFlights();
+  } catch (e) {
+    showMsg('msg-update-status', 'Error: ' + e.message, true);
+  }
+}
+
+// ─── GROUND OPS ──────────────────────────────────────────────────────────────
+
+async function loadAvailableGates() {
+  try {
+    const gates = await apiQuery('/api/groundops/gates/available');
+    const tbody = document.getElementById('available-gates-body');
+    if (!gates || gates.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3">No available gates.</td></tr>'; return;
+    }
+    tbody.innerHTML = gates.map(g =>
+      `<tr><td>${g.gateId}</td><td>${g.terminalProximity || '—'}</td><td>${fmtBool(g.occupied)}</td></tr>`
+    ).join('');
+  } catch (e) {
+    document.getElementById('available-gates-body').innerHTML =
+      '<tr><td colspan="3">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+async function assignGate() {
+  const fid = document.getElementById('assign-gate-flight').value;
+  if (!fid) { showMsg('msg-assign-gate', 'Enter Flight ID.', true); return; }
+  try {
+    const f = await api('POST', `/api/groundops/assign-gate/${fid}`);
+    showMsg('msg-assign-gate', `Gate ${f.gateNumber} assigned to flight ${f.flightNumber}.`, false);
+    loadAvailableGates();
+  } catch (e) {
+    showMsg('msg-assign-gate', 'Error: ' + e.message, true);
+  }
+}
+
+// ─── ATC ─────────────────────────────────────────────────────────────────────
+
+async function loadAvailableRunways() {
+  try {
+    const runways = await apiQuery('/api/atc/runways/available');
+    const tbody = document.getElementById('available-runways-body');
+    if (!runways || runways.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3">No available runways.</td></tr>'; return;
+    }
+    tbody.innerHTML = runways.map(r =>
+      `<tr><td>${r.runwayId}</td><td>${r.length}</td><td>${fmtBool(r.occupied)}</td></tr>`
+    ).join('');
+  } catch (e) {
+    document.getElementById('available-runways-body').innerHTML =
+      '<tr><td colspan="3">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+async function assignRunway() {
+  const fid = document.getElementById('assign-runway-flight').value;
+  if (!fid) { showMsg('msg-assign-runway', 'Enter Flight ID.', true); return; }
+  try {
+    const f = await api('POST', `/api/atc/assign-runway/${fid}`);
+    showMsg('msg-assign-runway', `Runway ${f.runwayId} assigned to flight ${f.flightNumber}.`, false);
+    loadAvailableRunways();
+  } catch (e) {
+    showMsg('msg-assign-runway', 'Error: ' + e.message, true);
+  }
+}
+
+async function issueClearance() {
+  const fid = document.getElementById('clearance-flight').value;
+  if (!fid) { showMsg('msg-clearance', 'Enter Flight ID.', true); return; }
+  try {
+    const f = await api('POST', `/api/atc/issue-clearance/${fid}`);
+    showMsg('msg-clearance', `Clearance issued. Flight ${f.flightNumber} is now ${f.status}.`, false);
+    loadAvailableRunways();
+  } catch (e) {
+    showMsg('msg-clearance', 'Error: ' + e.message, true);
+  }
+}
+
+// ─── ADMIN ───────────────────────────────────────────────────────────────────
+
+async function seedData() {
+  try {
+    await api('POST', '/api/admin/seed');
+    showMsg('msg-seed', 'Seed complete. Default gates and runways created (if not already present).', false);
+    loadAdminGates();
+    loadAdminRunways();
+  } catch (e) {
+    showMsg('msg-seed', 'Error: ' + e.message, true);
+  }
+}
+
+async function createGate() {
+  const gateId = document.getElementById('gate-id').value.trim();
+  const terminal = document.getElementById('gate-terminal').value.trim();
+  if (!gateId || !terminal) { showMsg('msg-create-gate', 'Gate ID and Terminal required.', true); return; }
+  try {
+    const g = await api('POST', '/api/admin/gates', { gateId, terminalProximity: terminal, occupied: false });
+    showMsg('msg-create-gate', `Gate ${g.gateId} created.`, false);
+    document.getElementById('gate-id').value = '';
+    document.getElementById('gate-terminal').value = '';
+    loadAdminGates();
+  } catch (e) {
+    showMsg('msg-create-gate', 'Error: ' + e.message, true);
+  }
+}
+
+async function createRunway() {
+  const runwayId = document.getElementById('runway-id').value.trim();
+  const length = parseFloat(document.getElementById('runway-length').value);
+  if (!runwayId || isNaN(length)) { showMsg('msg-create-runway', 'Runway ID and Length required.', true); return; }
+  try {
+    const r = await api('POST', '/api/admin/runways', { runwayId, length, occupied: false });
+    showMsg('msg-create-runway', `Runway ${r.runwayId} (${r.length}m) created.`, false);
+    document.getElementById('runway-id').value = '';
+    document.getElementById('runway-length').value = '';
+    loadAdminRunways();
+  } catch (e) {
+    showMsg('msg-create-runway', 'Error: ' + e.message, true);
+  }
+}
+
+async function loadAdminGates() {
+  try {
+    const gates = await apiQuery('/api/admin/gates');
+    const tbody = document.getElementById('admin-gates-body');
+    if (!gates || gates.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3">No gates.</td></tr>'; return;
+    }
+    tbody.innerHTML = gates.map(g =>
+      `<tr><td>${g.gateId}</td><td>${g.terminalProximity || '—'}</td><td>${fmtBool(g.occupied)}</td></tr>`
+    ).join('');
+  } catch (e) {
+    document.getElementById('admin-gates-body').innerHTML =
+      '<tr><td colspan="3">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+async function loadAdminRunways() {
+  try {
+    const runways = await apiQuery('/api/admin/runways');
+    const tbody = document.getElementById('admin-runways-body');
+    if (!runways || runways.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3">No runways.</td></tr>'; return;
+    }
+    tbody.innerHTML = runways.map(r =>
+      `<tr><td>${r.runwayId}</td><td>${r.length}</td><td>${fmtBool(r.occupied)}</td></tr>`
+    ).join('');
+  } catch (e) {
+    document.getElementById('admin-runways-body').innerHTML =
+      '<tr><td colspan="3">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+loadAllFlights();
+</script>
+</body>
+</html>
