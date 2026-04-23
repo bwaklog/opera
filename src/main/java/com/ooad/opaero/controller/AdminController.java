@@ -113,5 +113,15 @@ public class AdminController {
                 flightRepo.save(f);
             }
         }
+        if (userRepo.count() == 0) {
+            String[] passengers = {
+                "rohan_sharma", "priya_iyer",  "aditya_rao",   "ananya_menon",
+                "kabir_patel",  "isha_reddy",  "vikram_singh", "neha_kapoor",
+                "arjun_nair",   "meera_joshi", "siddharth_bose", "tanvi_desai"
+            };
+            for (String username : passengers) {
+                userRepo.save(userFactory.createUser("PASSENGER", username));
+            }
+        }
     }
 }
