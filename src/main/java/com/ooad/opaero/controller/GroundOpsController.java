@@ -24,4 +24,9 @@ public class GroundOpsController {
     public List<Gate> listAvailableGates() {
         return groundOpsService.listAvailableGates();
     }
+
+    @GetMapping("/gates")
+    public List<Gate> listGates() {
+        return groundOpsService.listGates();
+    }
 }

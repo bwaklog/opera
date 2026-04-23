@@ -3,6 +3,7 @@ import com.ooad.opaero.model.Flight;
 import com.ooad.opaero.model.Gate;
 import com.ooad.opaero.model.Runway;
 import com.ooad.opaero.model.User;
+import com.ooad.opaero.patterns.factory.UserFactory;
 import com.ooad.opaero.repository.FlightRepository;
 import com.ooad.opaero.repository.GateRepository;
 import com.ooad.opaero.repository.RunwayRepository;
@@ -18,18 +19,20 @@ public class AdminController {
     private final RunwayRepository runwayRepo;
     private final FlightRepository flightRepo;
     private final UserRepository userRepo;
+    private final UserFactory userFactory;
 
-    public AdminController(GateRepository gateRepo, RunwayRepository runwayRepo, FlightRepository flightRepo, UserRepository userRepo) {
+    public AdminController(GateRepository gateRepo, RunwayRepository runwayRepo, FlightRepository flightRepo, UserRepository userRepo, UserFactory userFactory) {
         this.gateRepo = gateRepo;
         this.runwayRepo = runwayRepo;
         this.flightRepo = flightRepo;
         this.userRepo = userRepo;
+        this.userFactory = userFactory;
     }
 
     @PostMapping("/passengers")
     public User createPassenger(@RequestBody User user) {
-        user.setRole("PASSENGER");
-        return userRepo.save(user);
+        User passenger = userFactory.createUser("PASSENGER", user.getUsername());
+        return userRepo.save(passenger);
     }
 
     @GetMapping("/passengers")

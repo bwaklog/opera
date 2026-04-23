@@ -8,6 +8,12 @@ import java.util.List;
 @Component
 public class FlightNotifier {
     private List<FlightObserver> observers = new ArrayList<>();
+
+    public FlightNotifier(List<FlightObserver> observers) {
+        if (observers != null) {
+            this.observers.addAll(observers);
+        }
+    }
     
     public void addObserver(FlightObserver obs) { observers.add(obs); }
     public void removeObserver(FlightObserver obs) { observers.remove(obs); }

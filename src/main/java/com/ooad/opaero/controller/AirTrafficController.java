@@ -28,4 +28,9 @@ public class AirTrafficController {
     public List<Runway> listAvailableRunways() {
         return atcService.listAvailableRunways();
     }
+
+    @GetMapping("/runways")
+    public List<Runway> listRunways() {
+        return atcService.listRunways();
+    }
 }

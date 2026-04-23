@@ -4,6 +4,9 @@ import com.ooad.opaero.model.Flight;
 public class ScheduledState implements FlightState {
     @Override
     public void next(Flight flight, FlightStateContext context) {
+        if (flight.getGateNumber() == null || flight.getGateNumber().isBlank()) {
+            throw new IllegalStateException("Gate required before boarding");
+        }
         flight.setStatus("BOARDING");
         context.setState(new BoardingState());
     }
